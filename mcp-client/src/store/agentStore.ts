@@ -2,12 +2,16 @@ import { create } from 'zustand';
 import { AgentExecution, ChatMessage, SystemLog } from '@/types/agent';
 import { v4 as uuidv4 } from 'uuid';
 
+export type AIProviderName = 'gemini' | 'groq';
+
 interface AgentStoreState {
     currentExecutionId: string | null;
     messages: ChatMessage[];
     agents: AgentExecution[];
     logs: SystemLog[];
     isThinking: boolean;
+    provider: AIProviderName;
+    providerLimitReached: Record<AIProviderName, boolean>;
 
     // Actions
     addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
@@ -17,6 +21,8 @@ interface AgentStoreState {
     startExecution: () => void;
     stopExecution: () => void;
     reset: () => void;
+    setProvider: (provider: AIProviderName) => void;
+    setProviderLimitReached: (provider: AIProviderName, reached: boolean) => void;
 }
 
 export const useAgentStore = create<AgentStoreState>((set) => ({
@@ -25,6 +31,15 @@ export const useAgentStore = create<AgentStoreState>((set) => ({
     agents: [],
     logs: [],
     isThinking: false,
+    provider: 'gemini',
+    providerLimitReached: { gemini: false, groq: false },
+
+    setProvider: (provider) => set({ provider }),
+
+    setProviderLimitReached: (provider, reached) =>
+        set((state) => ({
+            providerLimitReached: { ...state.providerLimitReached, [provider]: reached },
+        })),
 
     addMessage: (msg) => set((state) => ({
         messages: [...state.messages, { ...msg, id: uuidv4(), timestamp: new Date().toISOString() }],
@@ -39,7 +54,6 @@ export const useAgentStore = create<AgentStoreState>((set) => ({
             return { messages };
         }
 
-        // If no streaming message exists, create one
         messages.push({
             id: uuidv4(),
             role: 'assistant',
@@ -58,7 +72,6 @@ export const useAgentStore = create<AgentStoreState>((set) => ({
             return { agents: newAgents };
         }
 
-        // If agent doesn't exist, create it (assuming minimum fields are passed)
         if (partial.name && partial.status) {
             return {
                 agents: [...state.agents, {
@@ -77,13 +90,13 @@ export const useAgentStore = create<AgentStoreState>((set) => ({
     }),
 
     addLog: (log) => set((state) => ({
-        logs: [...state.logs, { ...log, id: uuidv4(), timestamp: new Date().toISOString() }].slice(-100) // Keep last 100
+        logs: [...state.logs, { ...log, id: uuidv4(), timestamp: new Date().toISOString() }].slice(-100),
     })),
 
     startExecution: () => set({
         currentExecutionId: uuidv4(),
         isThinking: true,
-        agents: [], // Clear previous agents for new execution
+        agents: [],
     }),
 
     stopExecution: () => set((state) => {
@@ -92,11 +105,7 @@ export const useAgentStore = create<AgentStoreState>((set) => ({
         if (lastMessage && lastMessage.isStreaming) {
             lastMessage.isStreaming = false;
         }
-
-        return {
-            isThinking: false,
-            messages
-        };
+        return { isThinking: false, messages };
     }),
 
     reset: () => set({ currentExecutionId: null, messages: [], agents: [], logs: [], isThinking: false }),

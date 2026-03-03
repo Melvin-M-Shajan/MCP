@@ -13,7 +13,8 @@ export interface AIProvider {
         schema: z.ZodSchema<T>,
         schemaName: string,
         callbacks?: BaseCallbackHandler[],
-        temperature?: number
+        temperature?: number,
+        provider?: 'gemini' | 'groq'
     ): Promise<T>;
 
     /**
@@ -22,6 +23,8 @@ export interface AIProvider {
     generateStream(
         prompt: string,
         callbacks?: BaseCallbackHandler[],
-        temperature?: number
+        temperature?: number,
+        provider?: 'gemini' | 'groq'
     ): AsyncGenerator<string>;
 }
+

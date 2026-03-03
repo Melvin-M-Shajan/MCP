@@ -18,7 +18,7 @@ export class OrchestratorService {
     /**
      * Main entrypoint for processing a query.
      */
-    async execute(initialQuery: string, sessionId?: string, userRole?: string, userId?: string): Promise<State> {
+    async execute(initialQuery: string, sessionId?: string, userRole?: string, userId?: string, provider?: 'gemini' | 'groq'): Promise<State> {
         this.logger.log(`Starting orchestration for query: "${initialQuery}"`);
         const traceId = uuidv4();
         const startTime = Date.now();
@@ -30,6 +30,7 @@ export class OrchestratorService {
             chatHistory: [],
             agentResponses: [],
             errors: [],
+            provider,
         };
 
         if (sessionId) {
@@ -226,6 +227,9 @@ export class OrchestratorService {
             }
             if (response.agentName === 'FORMATTER_AGENT') {
                 state.finalResponse = response.output;
+            }
+            if (response.agentName === 'TASK_AGENT' && response.output?.text) {
+                state.finalResponse = { summary: response.output.text };
             }
         }
     }

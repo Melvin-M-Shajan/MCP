@@ -12,7 +12,6 @@ export class FormatterAgent implements BaseAgent {
 
     private readonly formatSchema = z.object({
         summary: z.string().describe('A human-readable summary of the SQL results based on the original user query.'),
-        tabular_data: z.array(z.record(z.string(), z.any())).describe('The cleaned data ready for tabular UI display. Ensure keys are UI friendly.'),
     });
 
     constructor(
@@ -42,7 +41,8 @@ export class FormatterAgent implements BaseAgent {
                 this.formatSchema,
                 'response_formatter',
                 [reasoningLogger],
-                0.1 // Slight creativity for summary
+                0.1, // Slight creativity for summary
+                state.provider
             );
 
             return {
@@ -51,7 +51,7 @@ export class FormatterAgent implements BaseAgent {
                 input: state.dbResults,
                 output: {
                     summary: response.summary,
-                    tabularData: response.tabular_data,
+                    tabularData: state.dbResults,
                     rawData: state.dbResults, // Pass through original
                 },
                 tokensUsed: reasoningLogger.getTokenUsage(),

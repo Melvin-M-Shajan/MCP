@@ -22,7 +22,7 @@ export function ExecutionHistory() {
     }
 
     return (
-        <div className="h-full flex flex-col bg-black/40 rounded-xl border border-white/10 backdrop-blur-xl overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col bg-black/40 rounded-xl border border-white/10 backdrop-blur-xl overflow-hidden">
             <div className="p-4 border-b border-white/10 bg-white/[0.02]">
                 <h3 className="text-sm font-medium text-white/90 flex items-center gap-2">
                     <History className="w-4 h-4 text-blue-400" />
@@ -30,12 +30,12 @@ export function ExecutionHistory() {
                 </h3>
             </div>
 
-            <ScrollArea className="flex-1 p-2">
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-2">
                 <div className="flex flex-col gap-2">
                     {userPrompts.slice().reverse().map((prompt, i) => (
                         <Card
                             key={prompt.id}
-                            className="bg-white/5 border-white/10 p-3 hover:bg-white/10 transition-colors cursor-pointer group"
+                            className="bg-white/5 border-white/10 p-3 hover:bg-white/10 transition-colors cursor-pointer group flex-shrink-0"
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex flex-col gap-1 w-full group-hover:pr-8 transition-all relative">
@@ -64,7 +64,7 @@ export function ExecutionHistory() {
                         </Card>
                     ))}
                 </div>
-            </ScrollArea>
+            </div>
         </div>
     );
 }

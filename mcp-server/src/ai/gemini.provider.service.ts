@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { ChatGroq } from '@langchain/groq';
 import { BaseCallbackHandler } from '@langchain/core/callbacks/base';
 import { z } from 'zod';
 import { AIProvider } from './ai.provider.interface';
@@ -14,30 +15,72 @@ export class GeminiProviderService implements AIProvider {
     private readonly MAX_RETRIES = 3;
 
     /**
-     * Instantiates a generic model wrapper
+     * Instantiates the primary model (Gemini) and the fallback model (Groq)
      */
-    private getModel(temperature: number = 0) {
+    private getModels(temperature: number = 0) {
+        const primaryModel = new ChatGoogleGenerativeAI({
+            model: 'gemini-2.5-flash',
+            temperature,
+            maxRetries: 1,
+        });
+
+        const fallbackModel = new ChatGroq({
+            apiKey: process.env.GROQ_API_KEY,
+            model: 'llama-3.3-70b-versatile',
+            temperature,
+            maxRetries: 2,
+        });
+
+        return { primaryModel, fallbackModel };
+    }
+
+    /**
+     * Returns a single model instance for an explicit provider selection.
+     */
+    private getSingleModel(provider: 'gemini' | 'groq', temperature: number = 0) {
+        if (provider === 'groq') {
+            return new ChatGroq({
+                apiKey: process.env.GROQ_API_KEY,
+                model: 'llama-3.3-70b-versatile',
+                temperature,
+                maxRetries: 2,
+            });
+        }
         return new ChatGoogleGenerativeAI({
             model: 'gemini-2.5-flash',
             temperature,
-            maxRetries: 2, // Native Langchain retries for networking issues
+            maxRetries: 1,
         });
     }
 
     /**
-     * Generates structured output with explicit RxJS retries for semantic hallucination failures
+     * Generates structured output with explicit RxJS retries for semantic hallucination failures.
+     * Incorporates LangChain Fallbacks: Gemini -> Groq
      */
     async generateStructured<T>(
         prompt: string,
         schema: z.ZodSchema<T>,
         schemaName: string,
         callbacks?: BaseCallbackHandler[],
-        temperature: number = 0
+        temperature: number = 0,
+        provider?: 'gemini' | 'groq'
     ): Promise<T> {
-        const model = this.getModel(temperature).withStructuredOutput(schema, { name: schemaName });
+        let modelToUse: any;
 
-        // RxJS execution block for complex custom retry logic (e.g. LLM didn't match Zod exactly)
-        const executePipeline = defer(() => model.invoke(prompt, { callbacks })).pipe(
+        if (provider) {
+            // User explicitly picked a provider — use it directly, no fallback
+            this.logger.log(`Using provider: ${provider} (user-selected)`);
+            const single = this.getSingleModel(provider, temperature);
+            modelToUse = single.withStructuredOutput(schema, { name: schemaName });
+        } else {
+            // Default: Gemini → Groq fallback chain
+            const { primaryModel, fallbackModel } = this.getModels(temperature);
+            const primaryWithStructuredOutput = primaryModel.withStructuredOutput(schema, { name: schemaName });
+            const fallbackWithStructuredOutput = fallbackModel.withStructuredOutput(schema, { name: schemaName });
+            modelToUse = primaryWithStructuredOutput.withFallbacks({ fallbacks: [fallbackWithStructuredOutput] });
+        }
+
+        const executePipeline = defer(() => modelToUse.invoke(prompt, { callbacks })).pipe(
             retryWhen((errors) =>
                 errors.pipe(
                     scan((retryCount, error) => {
@@ -45,10 +88,10 @@ export class GeminiProviderService implements AIProvider {
                             this.logger.error(`Failed after ${this.MAX_RETRIES} retries. Error: ${error.message}`);
                             throw error;
                         }
-                        this.logger.warn(`LLM parsing error detected. Retrying... Attempts so far: ${retryCount + 1}`);
+                        this.logger.warn(`LLM error. Retrying... Attempt: ${retryCount + 1}`);
                         return retryCount + 1;
                     }, 0),
-                    delay(1000) // 1 second delay between retries
+                    delay(1000)
                 )
             )
         );
@@ -57,17 +100,25 @@ export class GeminiProviderService implements AIProvider {
     }
 
     /**
-     * Generates an AsyncGenerator for streaming responses
+     * Generates an AsyncGenerator for streaming responses using the Fallback chain.
      */
     async *generateStream(
         prompt: string,
         callbacks?: BaseCallbackHandler[],
-        temperature: number = 0.5
+        temperature: number = 0.5,
+        provider?: 'gemini' | 'groq'
     ): AsyncGenerator<string> {
-        const model = this.getModel(temperature);
+        let modelToStream: any;
 
-        // LangChain .stream() returns an AsyncGenerator of BaseMessages
-        const stream = await model.stream(prompt, { callbacks });
+        if (provider) {
+            this.logger.log(`Streaming with provider: ${provider} (user-selected)`);
+            modelToStream = this.getSingleModel(provider, temperature);
+        } else {
+            const { primaryModel, fallbackModel } = this.getModels(temperature);
+            modelToStream = primaryModel.withFallbacks({ fallbacks: [fallbackModel] });
+        }
+
+        const stream = await modelToStream.stream(prompt, { callbacks });
 
         for await (const chunk of stream) {
             if (typeof chunk.content === 'string') {
@@ -76,3 +127,4 @@ export class GeminiProviderService implements AIProvider {
         }
     }
 }
+

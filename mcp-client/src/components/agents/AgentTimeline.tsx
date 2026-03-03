@@ -1,7 +1,6 @@
 "use client";
 
 import { useAgentStore } from "@/store/agentStore";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { Activity, CheckCircle2, Clock, Target, AlertCircle } from "lucide-react";
 
@@ -30,8 +29,8 @@ export function AgentTimeline() {
                 </span>
             </h3>
 
-            <ScrollArea className="w-full h-full pb-4 whitespace-nowrap" orientation="horizontal">
-                <div className="flex items-center min-w-full gap-2 px-2 pb-4">
+            <div className="w-full overflow-x-auto custom-scrollbar pb-1">
+                <div className="flex items-center w-max gap-2 px-2 pb-2">
                     <AnimatePresence>
                         {agents.map((agent, index) => {
                             const isFirst = index === 0;
@@ -97,7 +96,7 @@ export function AgentTimeline() {
                         })}
                     </AnimatePresence>
                 </div>
-            </ScrollArea>
+            </div>
         </div>
     );
 }

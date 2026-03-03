@@ -37,7 +37,8 @@ export class SupervisorAgent implements BaseAgent {
                 this.routeSchema,
                 'supervisor_routing',
                 [reasoningLogger],
-                0 // Deterministic logic routing
+                0, // Deterministic logic routing
+                state.provider
             );
 
             return {

@@ -31,7 +31,7 @@ export default function DashboardPage() {
                 <div className="flex-1 min-h-0 relative">
                     <ChatPanel />
                 </div>
-                <div className="h-[250px] shrink-0 outline outline-1 outline-white/10 bg-black/40">
+                <div className="h-[220px] shrink-0 outline outline-1 outline-white/10 bg-black/40 flex flex-col">
                     <ExecutionHistory />
                 </div>
             </div>
@@ -88,7 +88,7 @@ export default function DashboardPage() {
                             <TabsContent value="reasoning" className="h-full m-0 absolute inset-0 outline-none data-[state=active]:animate-in data-[state=inactive]:animate-out data-[state=active]:fade-in-0 data-[state=inactive]:fade-out-0">
                                 <ReasoningTreeView />
                             </TabsContent>
-                            <TabsContent value="activity" className="h-full m-0 absolute inset-0 outline-none data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=inactive]:fade-out-0 hidden">
+                            <TabsContent value="activity" className="h-full m-0 absolute inset-0 outline-none data-[state=active]:animate-in data-[state=inactive]:animate-out data-[state=active]:fade-in-0 data-[state=inactive]:fade-out-0">
                                 <AgentActivityViewer />
                             </TabsContent>
                             <TabsContent value="sql" className="h-full m-0 absolute inset-0 outline-none data-[state=active]:animate-in data-[state=inactive]:animate-out data-[state=active]:fade-in-0 data-[state=inactive]:fade-out-0">
@@ -100,7 +100,7 @@ export default function DashboardPage() {
 
                 {/* Bottom Split - System Logs & Tokens */}
                 <div className="shrink-0 xl:h-[220px] flex flex-col xl:flex-row gap-4 h-auto">
-                    <div className="flex-1 max-h-[220px]">
+                    <div className="flex-1 max-h-[220px] flex flex-col">
                         <SystemLogs />
                     </div>
                     <div className="xl:w-[400px] w-full max-h-[220px]">

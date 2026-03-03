@@ -1,4 +1,5 @@
 import { useAgentStore } from '@/store/agentStore';
+import type { AIProviderName } from '@/store/agentStore';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -20,7 +21,7 @@ class WebSocketService {
     }
 
     // Execute the real query against NestJS
-    async startMockExecution(prompt: string) {
+    async startMockExecution(prompt: string, provider: AIProviderName = 'gemini') {
         if (this.isExecuting) return;
         this.isExecuting = true;
 
@@ -31,12 +32,17 @@ class WebSocketService {
         try {
             store.addLog({ level: 'info', message: `Sending query to backend: ${prompt}`, source: 'System' });
 
-            // Call our live NestJS API on port 3000
-            const response = await fetch('http://localhost:3000/query', {
+            // Call our live NestJS API on port 3001
+            const response = await fetch('http://localhost:3001/query', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: prompt })
+                body: JSON.stringify({ query: prompt, config: { provider } })
             });
+
+            if (response.status === 429) {
+                store.setProviderLimitReached(provider, true);
+                throw new Error(`Rate limit reached for ${provider}. Please switch providers.`);
+            }
 
             if (!response.ok) {
                 throw new Error(`API Error: ${response.status} ${response.statusText}`);
@@ -113,7 +119,7 @@ class WebSocketService {
                         // We have a rich formatted response
                         finalResponseText = data.summary;
                         if (data.tabularData && data.tabularData.length > 0) {
-                            finalResponseText += `\n\n📊 Retrieved ${data.tabularData.length} record(s). Check the 'Generated SQL' tab for the query details.`;
+                            finalResponseText += `\n\nRetrieved ${data.tabularData.length} record(s).`;
                         }
                         if (data.generatedSql) {
                             finalResponseText += `\n\n💡 Generated SQL:\n${data.generatedSql}`;

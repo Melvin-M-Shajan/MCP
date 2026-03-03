@@ -50,7 +50,7 @@ export class SchemaService implements OnModuleInit {
                 if (!schemaMap[row.table_name]) {
                     schemaMap[row.table_name] = [];
                 }
-                schemaMap[row.table_name].push(`${row.column_name} (${row.data_type})`);
+                schemaMap[row.table_name].push(`"${row.column_name}" (${row.data_type})`);
             }
 
             // Format as dense Markdown to save LLM context tokens

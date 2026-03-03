@@ -2,16 +2,16 @@
 
 import { useAgentStore } from "@/store/agentStore";
 import { wsService } from "@/services/websocket";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { LiquidGlassButton } from "@/components/ui/liquid-glass-button";
+import { ProviderSelector } from "@/components/chat/ProviderSelector";
 import { Send, User, Bot, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function ChatPanel() {
     const [input, setInput] = useState("");
-    const { messages, isThinking } = useAgentStore();
+    const { messages, isThinking, provider } = useAgentStore();
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -22,8 +22,7 @@ export function ChatPanel() {
 
     const handleSend = () => {
         if (!input.trim() || isThinking) return;
-
-        wsService.startMockExecution(input);
+        wsService.startMockExecution(input, provider);
         setInput("");
     };
 
@@ -37,7 +36,7 @@ export function ChatPanel() {
                 {isThinking && <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />}
             </div>
 
-            <ScrollArea className="flex-1 p-4 z-10" ref={scrollRef}>
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4 z-10" ref={scrollRef}>
                 <div className="flex flex-col gap-4 max-w-2xl mx-auto pb-4">
                     <AnimatePresence initial={false}>
                         {messages.map((msg) => (
@@ -53,8 +52,8 @@ export function ChatPanel() {
                                 </div>
 
                                 <div className={`px-4 py-3 rounded-2xl text-sm max-w-[85%] leading-relaxed ${msg.role === 'user'
-                                        ? 'bg-purple-500/10 border border-purple-500/20 text-white/90 rounded-tr-sm'
-                                        : 'bg-white/5 border border-white/10 text-white/80 rounded-tl-sm shadow-[0_4px_20px_rgba(0,0,0,0.2)]'
+                                    ? 'bg-purple-500/10 border border-purple-500/20 text-white/90 rounded-tr-sm'
+                                    : 'bg-white/5 border border-white/10 text-white/80 rounded-tl-sm shadow-[0_4px_20px_rgba(0,0,0,0.2)]'
                                     }`}>
                                     {msg.content}
                                     {msg.isStreaming && (
@@ -85,9 +84,9 @@ export function ChatPanel() {
                         )}
                     </AnimatePresence>
                 </div>
-            </ScrollArea>
+            </div>
 
-            <div className="p-4 border-t border-white/10 bg-black/60 backdrop-blur-md z-10">
+            <div className="p-4 border-t border-white/10 bg-black/60 backdrop-blur-md z-10 shrink-0">
                 <form
                     onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                     className="flex gap-2 max-w-2xl mx-auto relative group"
@@ -101,6 +100,7 @@ export function ChatPanel() {
                         disabled={isThinking}
                         className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl focus-visible:ring-purple-500/50 backdrop-blur-sm relative z-10"
                     />
+                    <ProviderSelector />
                     <LiquidGlassButton
                         variant="liquid"
                         size="icon"

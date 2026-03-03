@@ -24,6 +24,7 @@ export interface State {
   chatHistory: any[];
   agentResponses: AgentResponse[];
   errors: string[];
+  provider?: 'gemini' | 'groq';
 }
 
 export interface BaseAgent {

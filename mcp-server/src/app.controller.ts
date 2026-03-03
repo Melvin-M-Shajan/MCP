@@ -13,19 +13,21 @@ export class AppController {
 
   @Post('query')
   async processQuery(@Body() body: QueryRequestDto) {
-    // Process the query through the Multi-Agent Orchestrator
+    const provider = (body.config?.provider as 'gemini' | 'groq') ?? undefined;
+
     const resultState = await this.orchestratorService.execute(
       body.query,
       body.sessionId,
-      body.userRole
+      body.userRole,
+      undefined, // userId
+      provider
     );
 
-    // Return the final state payload mapping to the client
     return {
       query: resultState.query,
-      traces: resultState.agentResponses, // Exposes thinking visibility
+      traces: resultState.agentResponses,
       errors: resultState.errors,
-      data: resultState.finalResponse, // Formatted summary/tables
+      data: resultState.finalResponse,
     };
   }
 }

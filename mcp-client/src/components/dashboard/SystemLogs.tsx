@@ -45,7 +45,7 @@ export function SystemLogs() {
     }
 
     return (
-        <div className="h-[250px] bg-black/40 rounded-xl border border-white/10 backdrop-blur-xl flex flex-col overflow-hidden relative group">
+        <div className="flex-1 min-h-0 bg-black/40 rounded-xl border border-white/10 backdrop-blur-xl flex flex-col overflow-hidden relative group">
             {/* Subtle border glow */}
             <div className="absolute inset-0 bg-gradient-to-t from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
@@ -54,7 +54,7 @@ export function SystemLogs() {
                 <span className="text-white/40">{logs.length} events</span>
             </div>
 
-            <ScrollArea className="flex-1 p-2 custom-scrollbar" ref={scrollRef}>
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-2" ref={scrollRef}>
                 <div className="flex flex-col gap-1 pb-2">
                     <AnimatePresence>
                         {logs.map((log) => (
@@ -62,7 +62,7 @@ export function SystemLogs() {
                                 key={log.id}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="flex items-start gap-3 py-1.5 px-3 hover:bg-white/5 rounded-md transition-colors group/log text-xs font-mono"
+                                className="flex items-start gap-3 py-1.5 px-3 hover:bg-white/5 rounded-md transition-colors group/log text-xs font-mono shrink-0"
                             >
                                 <div className="shrink-0 mt-0.5 opacity-70 group-hover/log:opacity-100">
                                     {getIconForLevel(log.level)}
@@ -83,7 +83,7 @@ export function SystemLogs() {
                         ))}
                     </AnimatePresence>
                 </div>
-            </ScrollArea>
+            </div>
         </div>
     );
 }

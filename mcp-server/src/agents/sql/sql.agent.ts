@@ -43,7 +43,8 @@ export class SqlAgent implements BaseAgent {
                 this.sqlSchema,
                 'sql_generation',
                 [reasoningLogger],
-                0 // Zero temperature for SQL determinism
+                0, // Zero temperature for SQL determinism
+                state.provider
             );
 
             return {
