@@ -34,3 +34,10 @@ export interface DashboardState {
     agents: AgentExecution[];
     logs: SystemLog[];
 }
+
+export interface ChatSession {
+    id: string;       // The sessionId UUID
+    title: string;
+    createdAt: string;
+    updatedAt: string;
+}

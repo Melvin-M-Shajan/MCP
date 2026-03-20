@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { wsService } from "@/services/websocket";
+import { useAgentStore } from "@/store/agentStore";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { AgentActivityViewer } from "@/components/agents/AgentActivityViewer";
 import { AgentTimeline } from "@/components/agents/AgentTimeline";
@@ -14,14 +15,17 @@ import { PerformanceDashboard } from "@/components/observability/PerformanceDash
 import { ExecutionHistory } from "@/components/observability/ExecutionHistory";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, Database, GitMerge, BrainCircuit, BarChart3, History } from "lucide-react";
+import { Activity, Database, GitMerge, BrainCircuit } from "lucide-react";
 
 export default function DashboardPage() {
-    // Connect mock WebSocket on mount
+    const { fetchSessions } = useAgentStore();
+
+    // Connect mock WebSocket on mount and fetch existing sessions for sidebar
     useEffect(() => {
         wsService.connect();
+        fetchSessions();
         return () => wsService.disconnect();
-    }, []);
+    }, [fetchSessions]);
 
     return (
         <div className="flex flex-col h-full w-full lg:flex-row overflow-hidden absolute inset-0 pt-14 text-white z-10">

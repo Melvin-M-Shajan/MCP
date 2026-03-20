@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { wsService } from "@/services/websocket";
+import { useAgentStore } from "@/store/agentStore";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { AgentActivityViewer } from "@/components/agents/AgentActivityViewer";
 import { AgentTimeline } from "@/components/agents/AgentTimeline";
@@ -16,11 +17,14 @@ import { Activity, Database, GitMerge, BrainCircuit, Palette } from "lucide-reac
 import DemoOne from "@/components/demo";
 
 export default function App() {
-  // Connect mock WebSocket on mount
+  const { fetchSessions } = useAgentStore();
+
+  // Connect to API backend and fetch existing sessions on mount
   useEffect(() => {
     wsService.connect();
+    fetchSessions();
     return () => wsService.disconnect();
-  }, []);
+  }, [fetchSessions]);
 
   return (
     <div className="dark flex flex-col h-screen w-full lg:flex-row overflow-hidden absolute inset-0 pt-14 text-white z-10">
@@ -109,7 +113,7 @@ export default function App() {
                   value="showcase"
                   className="data-[state=active]:bg-pink-500/20 data-[state=active]:text-pink-300 rounded-lg text-white/60 text-xs gap-2 px-4 h-full shrink-0"
                 >
-                  <Palette className="w-4 h-4" /> UI Showcase
+                  {/* <Palette className="w-4 h-4" /> UI Showcase */}
                 </TabsTrigger>
               </TabsList>
             </div>

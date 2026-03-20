@@ -29,6 +29,10 @@ class WebSocketService {
         store.addMessage({ role: 'user', content: prompt });
         store.startExecution();
 
+        // Register this session on the server (idempotent upsert)
+        const sessionTitle = prompt.slice(0, 60) + (prompt.length > 60 ? '…' : '');
+        store.registerSessionOnServer(store.sessionId, sessionTitle);
+
         try {
             store.addLog({ level: 'info', message: `Sending query to backend: ${prompt}`, source: 'System' });
 
@@ -36,7 +40,7 @@ class WebSocketService {
             const response = await fetch('http://localhost:3001/query', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: prompt, config: { provider } })
+                body: JSON.stringify({ query: prompt, sessionId: store.sessionId, config: { provider } })
             });
 
             if (response.status === 429) {

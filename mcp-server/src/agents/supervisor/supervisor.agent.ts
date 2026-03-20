@@ -4,6 +4,7 @@ import { BaseAgent, State, AgentResponse } from '../../interfaces/core.interface
 import { ReasoningLogger } from '../../logging/reasoning.logger';
 import type { AIProvider } from '../../ai/ai.provider.interface';
 import { SUPERVISOR_DECOMPOSITION_PROMPT_V1 } from '../../prompts/supervisor.prompt';
+import { formatChatHistory } from '../../core/chat-history.util';
 
 @Injectable()
 export class SupervisorAgent implements BaseAgent {
@@ -30,6 +31,7 @@ export class SupervisorAgent implements BaseAgent {
             this.logger.log('Starting Supervisor Agent via AIProvider...');
 
             const hydratedPrompt = SUPERVISOR_DECOMPOSITION_PROMPT_V1
+                .replace('{{chatHistory}}', formatChatHistory(state.chatHistory))
                 .replace('{{query}}', state.query);
 
             const response = await this.aiProvider.generateStructured(

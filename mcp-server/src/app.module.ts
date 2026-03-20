@@ -5,6 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { AiModule } from './ai/ai.module';
 import { MemoryModule } from './memory/memory.module';
 import { ObservabilityModule } from './observability/observability.module';
+import { SessionsModule } from './sessions/sessions.module';
 import { OrchestratorService } from './orchestrator/orchestrator.service';
 import { AgentRegistry } from './orchestrator/agent.registry';
 import { SupervisorAgent } from './agents/supervisor/supervisor.agent';
@@ -14,7 +15,7 @@ import { ExecutionAgent } from './agents/execution/execution.agent';
 import { FormatterAgent } from './agents/formatter/formatter.agent';
 
 @Module({
-  imports: [DatabaseModule, AiModule, MemoryModule, ObservabilityModule],
+  imports: [DatabaseModule, AiModule, MemoryModule, ObservabilityModule, SessionsModule],
   controllers: [AppController],
   providers: [
     AppService,

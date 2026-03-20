@@ -3,6 +3,7 @@ import { AgentRegistry } from './agent.registry';
 import { State, AgentResponse } from '../interfaces/core.interface';
 import { MemoryService } from '../memory/memory.service';
 import { MetricsService } from '../observability/metrics.service';
+import { SessionsService } from '../sessions/sessions.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -12,7 +13,8 @@ export class OrchestratorService {
     constructor(
         private readonly agentRegistry: AgentRegistry,
         private readonly memoryService: MemoryService,
-        private readonly metricsService: MetricsService
+        private readonly metricsService: MetricsService,
+        private readonly sessionsService: SessionsService,
     ) { }
 
     /**
@@ -135,6 +137,8 @@ export class OrchestratorService {
                 // Save the final generated assistant output back to the chat history tail
                 state.chatHistory.push({ role: 'assistant', content: JSON.stringify(state.finalResponse || state.errors) });
                 await this.memoryService.saveSessionState(sessionId, state);
+                // Bump updatedAt so sessions list stays ordered by most-recent activity
+                await this.sessionsService.touchSession(sessionId);
             }
 
             // Persist the compliance trace with all LLM reasoning tokens and generated SQL

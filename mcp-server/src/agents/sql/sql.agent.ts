@@ -5,6 +5,7 @@ import { SchemaService } from '../../database/schema.service';
 import { ReasoningLogger } from '../../logging/reasoning.logger';
 import type { AIProvider } from '../../ai/ai.provider.interface';
 import { SQL_GENERATION_PROMPT_V1 } from '../../prompts/sql.prompt';
+import { formatChatHistory } from '../../core/chat-history.util';
 
 @Injectable()
 export class SqlAgent implements BaseAgent {
@@ -32,9 +33,10 @@ export class SqlAgent implements BaseAgent {
             this.logger.log('Starting SQL Generation Agent via AIProvider...');
             const schemaCtx = this.schemaService.getSchema();
 
-            // Hydrate Prompt Template
+            // Hydrate Prompt Template (including chat history for follow-up query awareness)
             let hydratedPrompt = SQL_GENERATION_PROMPT_V1
                 .replace('{{schemaCtx}}', schemaCtx)
+                .replace('{{chatHistory}}', formatChatHistory(state.chatHistory))
                 .replace('{{query}}', state.query);
 
             // Execute explicitly through the AI Provider abstraction

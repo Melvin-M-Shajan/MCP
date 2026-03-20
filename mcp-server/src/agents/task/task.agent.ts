@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { BaseAgent, State, AgentResponse } from '../../interfaces/core.interface';
 import { ReasoningLogger } from '../../logging/reasoning.logger';
 import type { AIProvider } from '../../ai/ai.provider.interface';
+import { formatChatHistory } from '../../core/chat-history.util';
 
 @Injectable()
 export class TaskAgent implements BaseAgent {
@@ -25,12 +26,16 @@ export class TaskAgent implements BaseAgent {
         try {
             this.logger.log('Starting Task Agent via AIProvider...');
 
+            const historySection = formatChatHistory(state.chatHistory);
+
             const hydratedPrompt = `
 You are a helpful, intelligent AI assistant in a complex multi-agent system.
 The user has asked a general question or given a task that does not require database access.
 Respond conversationally, helpfully, and directly.
+Use the conversation history below to understand context and provide coherent follow-up responses.
 
-User Query:
+${historySection ? historySection + '\n' : ''}
+Current User Query:
 ${state.query}
             `.trim();
 

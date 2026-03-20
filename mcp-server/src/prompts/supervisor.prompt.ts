@@ -17,6 +17,9 @@ IMPORTANT RULES:
 1. For ANY question about data, metrics, customers, orders, products, or anything in the database: ALWAYS use SEQUENTIAL mode with nextAgents = ["SQL_AGENT", "EXECUTION_AGENT"].
 2. For pure knowledge / summarization tasks with no DB data needed: use TASK_AGENT alone.
 3. NEVER return only SQL_AGENT without EXECUTION_AGENT for database questions. The SQL must always be executed.
+4. Use the conversation history below to resolve follow-up questions (e.g., "what about last month?", "summarize that"). If the current query is a follow-up that references prior database results, still route to SQL_AGENT + EXECUTION_AGENT.
 
-Task: {{query}}
+{{chatHistory}}
+
+Current Task: {{query}}
 `;

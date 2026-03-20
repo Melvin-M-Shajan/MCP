@@ -1,15 +1,20 @@
 import { create } from 'zustand';
-import { AgentExecution, ChatMessage, SystemLog } from '@/types/agent';
+import { AgentExecution, ChatMessage, SystemLog, ChatSession } from '@/types/agent';
 import { v4 as uuidv4 } from 'uuid';
 
 export type AIProviderName = 'gemini' | 'groq';
 
+const API_BASE = 'http://localhost:3001';
+
 interface AgentStoreState {
     currentExecutionId: string | null;
+    sessionId: string;
+    sessions: ChatSession[];
     messages: ChatMessage[];
     agents: AgentExecution[];
     logs: SystemLog[];
     isThinking: boolean;
+    isSidebarOpen: boolean;
     provider: AIProviderName;
     providerLimitReached: Record<AIProviderName, boolean>;
 
@@ -21,20 +26,33 @@ interface AgentStoreState {
     startExecution: () => void;
     stopExecution: () => void;
     reset: () => void;
+    resetSession: () => void;
     setProvider: (provider: AIProviderName) => void;
     setProviderLimitReached: (provider: AIProviderName, reached: boolean) => void;
+    toggleSidebar: () => void;
+
+    // Session persistence
+    fetchSessions: () => Promise<void>;
+    registerSessionOnServer: (sessionId: string, title: string) => Promise<void>;
+    loadSession: (sessionId: string) => Promise<void>;
+    deleteSession: (sessionId: string) => Promise<void>;
 }
 
-export const useAgentStore = create<AgentStoreState>((set) => ({
+export const useAgentStore = create<AgentStoreState>((set, get) => ({
     currentExecutionId: null,
+    sessionId: uuidv4(),
+    sessions: [],
     messages: [],
     agents: [],
     logs: [],
     isThinking: false,
+    isSidebarOpen: true,
     provider: 'gemini',
     providerLimitReached: { gemini: false, groq: false },
 
     setProvider: (provider) => set({ provider }),
+
+    toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
 
     setProviderLimitReached: (provider, reached) =>
         set((state) => ({
@@ -109,4 +127,86 @@ export const useAgentStore = create<AgentStoreState>((set) => ({
     }),
 
     reset: () => set({ currentExecutionId: null, messages: [], agents: [], logs: [], isThinking: false }),
+
+    // Generates a fresh sessionId and clears the chat — starts a brand new conversation
+    resetSession: () => set({
+        sessionId: uuidv4(),
+        currentExecutionId: null,
+        messages: [],
+        agents: [],
+        logs: [],
+        isThinking: false,
+    }),
+
+    // ===== SESSION PERSISTENCE =====
+
+    fetchSessions: async () => {
+        try {
+            const res = await fetch(`${API_BASE}/sessions`);
+            if (!res.ok) return;
+            const sessions: ChatSession[] = await res.json();
+            set({ sessions });
+        } catch {
+            // Server may not be available — silently fail
+        }
+    },
+
+    registerSessionOnServer: async (sessionId: string, title: string) => {
+        try {
+            await fetch(`${API_BASE}/sessions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId, title }),
+            });
+            // Refresh the list so the new session appears in the sidebar
+            get().fetchSessions();
+        } catch {
+            // Silently fail — session registration is best-effort
+        }
+    },
+
+    loadSession: async (sessionId: string) => {
+        try {
+            const res = await fetch(`${API_BASE}/sessions/${sessionId}/messages`);
+            if (!res.ok) return;
+
+            const { messages: rawHistory } = await res.json();
+
+            // Convert chatHistory [{role, content}] to ChatMessage[] for the store
+            const messages: ChatMessage[] = rawHistory.map((entry: any) => ({
+                id: uuidv4(),
+                role: entry.role === 'user' ? 'user' : 'assistant',
+                content: entry.content,
+                timestamp: new Date().toISOString(),
+            }));
+
+            set({
+                sessionId,
+                messages,
+                agents: [],
+                logs: [],
+                currentExecutionId: null,
+                isThinking: false,
+            });
+        } catch {
+            // Silently fail
+        }
+    },
+
+    deleteSession: async (sessionId: string) => {
+        try {
+            await fetch(`${API_BASE}/sessions/${sessionId}`, { method: 'DELETE' });
+
+            set((state) => ({
+                sessions: state.sessions.filter(s => s.id !== sessionId),
+            }));
+
+            // If the deleted session was the active one, start a fresh session
+            if (get().sessionId === sessionId) {
+                get().resetSession();
+            }
+        } catch {
+            // Silently fail
+        }
+    },
 }));
