@@ -89,7 +89,10 @@ export class OrchestratorService {
 
             // Step 3: Format the Output
             const formatter = this.agentRegistry.getAgent('FORMATTER_AGENT');
-            if (formatter && state.dbResults) { // Only format if we have db results
+            const hasCsvAgent = plan.nextAgents.includes('CSV_AGENT');
+            
+            // Only format if we have db results AND we aren't explicitly outputting a raw CSV buffer
+            if (formatter && state.dbResults && !hasCsvAgent) {
                 this.logger.log('Invoking Formatter Agent...');
                 const formatterResponse = await formatter.execute(state);
                 this.mergeResponseIntoState(state, formatterResponse);
@@ -234,6 +237,15 @@ export class OrchestratorService {
             }
             if (response.agentName === 'TASK_AGENT' && response.output?.text) {
                 state.finalResponse = { summary: response.output.text };
+            }
+            if (response.agentName === 'REPO_AGENT' && response.output?.text) {
+                state.finalResponse = { summary: response.output.text };
+            }
+            if (response.agentName === 'DIAGRAM_AGENT' && response.output?.text) {
+                state.finalResponse = response.output.text;
+            }
+            if (response.agentName === 'CSV_AGENT' && response.output) {
+                state.finalResponse = response.output;
             }
         }
     }

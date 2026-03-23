@@ -5,10 +5,11 @@ import { useMemo } from "react";
 import ReactFlow, {
     Background,
     Controls,
-    Position,
+    Position,   
     Handle,
+    type Edge,
+    type Node,
 } from "reactflow";
-import type { Edge, Node } from "reactflow";
 import "reactflow/dist/style.css";
 import { Activity, CheckCircle2, AlertCircle } from "lucide-react";
 

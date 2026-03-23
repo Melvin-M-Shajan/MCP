@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { ProviderSelector } from "@/components/chat/ProviderSelector";
 import { Send, User, Bot, Loader2, PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { MermaidBlock } from "@/components/MermaidBlock";
+import { CsvViewer } from "@/components/CsvViewer";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -98,7 +100,23 @@ export function ChatPanel() {
                                         ? 'bg-purple-500/10 border border-purple-500/20 text-white/90 rounded-tr-sm'
                                         : 'bg-white/5 border border-white/10 text-white/80 rounded-tl-sm shadow-[0_4px_20px_rgba(0,0,0,0.2)]'
                                         }`}>
-                                        {msg.content}
+                                        {msg.role !== 'user' ? (
+                                            (() => {
+                                                const text = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
+                                                if (text.trim().startsWith('```mermaid')) {
+                                                    return <MermaidBlock content={text} />;
+                                                }
+                                                // CSV detection: first line has no spaces and has commas, not JSON or mermaid
+                                                const firstLine = text.split('\n')[0];
+                                                if (text.includes(',') && !firstLine.includes(' ') && !text.startsWith('{') && !text.startsWith('```')) {
+                                                    return <CsvViewer data={text} />;
+                                                }
+
+                                                return <>{msg.content}</>;
+                                            })()
+                                        ) : (
+                                            msg.content
+                                        )}
                                         {msg.isStreaming && (
                                             <motion.span
                                                 initial={{ opacity: 0 }}

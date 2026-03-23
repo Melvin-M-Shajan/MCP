@@ -6,6 +6,7 @@ import { AiModule } from './ai/ai.module';
 import { MemoryModule } from './memory/memory.module';
 import { ObservabilityModule } from './observability/observability.module';
 import { SessionsModule } from './sessions/sessions.module';
+import { RepoModule } from './repo/repo.module';
 import { OrchestratorService } from './orchestrator/orchestrator.service';
 import { AgentRegistry } from './orchestrator/agent.registry';
 import { SupervisorAgent } from './agents/supervisor/supervisor.agent';
@@ -13,9 +14,12 @@ import { SqlAgent } from './agents/sql/sql.agent';
 import { TaskAgent } from './agents/task/task.agent';
 import { ExecutionAgent } from './agents/execution/execution.agent';
 import { FormatterAgent } from './agents/formatter/formatter.agent';
+import { RepoAgent } from './agents/repo/repo.agent';
+import { DiagramAgent } from './agents/diagram.agent';
+import { CsvAgent } from './agents/csv.agent';
 
 @Module({
-  imports: [DatabaseModule, AiModule, MemoryModule, ObservabilityModule, SessionsModule],
+  imports: [DatabaseModule, AiModule, MemoryModule, ObservabilityModule, SessionsModule, RepoModule],
   controllers: [AppController],
   providers: [
     AppService,
@@ -25,7 +29,10 @@ import { FormatterAgent } from './agents/formatter/formatter.agent';
     SqlAgent,
     TaskAgent,
     ExecutionAgent,
-    FormatterAgent
+    FormatterAgent,
+    RepoAgent,
+    DiagramAgent,
+    CsvAgent
   ],
 })
 export class AppModule implements OnModuleInit {
@@ -36,6 +43,9 @@ export class AppModule implements OnModuleInit {
     private readonly taskAgent: TaskAgent,
     private readonly executionAgent: ExecutionAgent,
     private readonly formatterAgent: FormatterAgent,
+    private readonly repoAgent: RepoAgent,
+    private readonly diagramAgent: DiagramAgent,
+    private readonly csvAgent: CsvAgent,
   ) { }
 
   onModuleInit() {
@@ -45,5 +55,8 @@ export class AppModule implements OnModuleInit {
     this.registry.register(this.taskAgent.name, this.taskAgent);
     this.registry.register(this.executionAgent.name, this.executionAgent);
     this.registry.register(this.formatterAgent.name, this.formatterAgent);
+    this.registry.register(this.repoAgent.name, this.repoAgent);
+    this.registry.register(this.diagramAgent.name, this.diagramAgent);
+    this.registry.register(this.csvAgent.name, this.csvAgent);
   }
 }

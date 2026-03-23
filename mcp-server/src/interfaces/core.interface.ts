@@ -25,6 +25,7 @@ export interface State {
   agentResponses: AgentResponse[];
   errors: string[];
   provider?: 'gemini' | 'groq';
+  targetFile?: string;
 }
 
 export interface BaseAgent {
