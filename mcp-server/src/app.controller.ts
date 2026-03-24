@@ -2,7 +2,7 @@ import { Controller, Post, Body, Get } from '@nestjs/common';
 import { OrchestratorService } from './orchestrator/orchestrator.service';
 import { QueryRequestDto } from './dto/query.dto';
 
-@Controller()
+@Controller('api')
 export class AppController {
   constructor(private readonly orchestratorService: OrchestratorService) { }
 

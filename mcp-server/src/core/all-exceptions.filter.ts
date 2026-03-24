@@ -26,6 +26,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
             exception instanceof Error ? exception.stack : ''
         );
 
+        if (response.headersSent) {
+            return;
+        }
+
         // Standardized Error Output for the production MCP Server
         response.status(status).json({
             statusCode: status,

@@ -21,7 +21,7 @@ class CreateSessionDto {
     title: string;
 }
 
-@Controller('sessions')
+@Controller('api/sessions')
 export class SessionsController {
     constructor(private readonly sessionsService: SessionsService) { }
 

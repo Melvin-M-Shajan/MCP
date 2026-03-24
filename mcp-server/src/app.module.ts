@@ -1,4 +1,7 @@
 import { Module, OnModuleInit } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -17,9 +20,38 @@ import { FormatterAgent } from './agents/formatter/formatter.agent';
 import { RepoAgent } from './agents/repo/repo.agent';
 import { DiagramAgent } from './agents/diagram.agent';
 import { CsvAgent } from './agents/csv.agent';
+import { ConfigModule } from './config/config.module';
+import { IntrospectionModule } from './introspection/introspection.module';
+
+const REACT_DIST_CANDIDATES = [
+  resolve(__dirname, '..', '..', 'react-client', 'dist'),
+  resolve(__dirname, '..', '..', '..', 'react-client', 'dist'),
+];
+
+const REACT_DIST_ROOT =
+  REACT_DIST_CANDIDATES.find((candidate) => existsSync(candidate)) ??
+  REACT_DIST_CANDIDATES[0];
+
+if (!existsSync(REACT_DIST_ROOT)) {
+  // eslint-disable-next-line no-console
+  console.warn(`UI build not found at ${REACT_DIST_ROOT} — run npm run build:ui`);
+}
 
 @Module({
-  imports: [DatabaseModule, AiModule, MemoryModule, ObservabilityModule, SessionsModule, RepoModule],
+  imports: [
+    ConfigModule,
+    ServeStaticModule.forRoot({
+      rootPath: REACT_DIST_ROOT,
+      exclude: ['/api', '/api/*path'],
+    }),
+    DatabaseModule,
+    AiModule,
+    MemoryModule,
+    ObservabilityModule,
+    SessionsModule,
+    RepoModule,
+    IntrospectionModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,

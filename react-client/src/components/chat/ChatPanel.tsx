@@ -1,5 +1,5 @@
 import { useAgentStore } from "@/store/agentStore";
-import { wsService } from "@/services/websocket";
+import { wsService } from "@/services/api";
 import { SessionSidebar } from "@/components/chat/SessionSidebar";
 import { Input } from "@/components/ui/input";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";

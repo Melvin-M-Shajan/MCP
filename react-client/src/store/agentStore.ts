@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import type { AgentExecution, ChatMessage, SystemLog, AgentStatus, ChatSession } from '@/types/agent';
 import { v4 as uuidv4 } from 'uuid';
+import { withApiKeyHeaders } from '@/services/auth';
 
 export type AIProviderName = 'gemini' | 'groq';
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
 interface AgentStoreState {
     currentExecutionId: string | null;
@@ -141,7 +142,9 @@ export const useAgentStore = create<AgentStoreState>((set, get) => ({
 
     fetchSessions: async () => {
         try {
-            const res = await fetch(`${API_BASE}/sessions`);
+            const res = await fetch(`${API_BASE}/api/sessions`, {
+                headers: withApiKeyHeaders(),
+            });
             if (!res.ok) return;
             const sessions: ChatSession[] = await res.json();
             set({ sessions });
@@ -152,9 +155,9 @@ export const useAgentStore = create<AgentStoreState>((set, get) => ({
 
     registerSessionOnServer: async (sessionId: string, title: string) => {
         try {
-            await fetch(`${API_BASE}/sessions`, {
+            await fetch(`${API_BASE}/api/sessions`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: withApiKeyHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ sessionId, title }),
             });
             get().fetchSessions();
@@ -165,7 +168,9 @@ export const useAgentStore = create<AgentStoreState>((set, get) => ({
 
     loadSession: async (sessionId: string) => {
         try {
-            const res = await fetch(`${API_BASE}/sessions/${sessionId}/messages`);
+            const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/messages`, {
+                headers: withApiKeyHeaders(),
+            });
             if (!res.ok) return;
 
             const { messages: rawHistory } = await res.json();
@@ -192,7 +197,10 @@ export const useAgentStore = create<AgentStoreState>((set, get) => ({
 
     deleteSession: async (sessionId: string) => {
         try {
-            await fetch(`${API_BASE}/sessions/${sessionId}`, { method: 'DELETE' });
+            await fetch(`${API_BASE}/api/sessions/${sessionId}`, {
+                method: 'DELETE',
+                headers: withApiKeyHeaders(),
+            });
 
             set((state) => ({
                 sessions: state.sessions.filter(s => s.id !== sessionId),

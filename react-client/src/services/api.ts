@@ -1,6 +1,9 @@
 import { useAgentStore } from '@/store/agentStore';
 import type { AIProviderName } from '@/store/agentStore';
 import { v4 as uuidv4 } from 'uuid';
+import { withApiKeyHeaders } from './auth';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
 /**
  * Service that connects the React UI to the live NestJS backend API.
@@ -37,9 +40,11 @@ class WebSocketService {
             store.addLog({ level: 'info', message: `Sending query to backend: ${prompt}`, source: 'System' });
 
             // Call our live NestJS API on port 3001
-            const response = await fetch('http://localhost:3001/query', {
+            const response = await fetch(`${API_BASE}/api/query`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: withApiKeyHeaders({
+                    'Content-Type': 'application/json',
+                }),
                 body: JSON.stringify({ query: prompt, sessionId: store.sessionId, config: { provider } })
             });
 

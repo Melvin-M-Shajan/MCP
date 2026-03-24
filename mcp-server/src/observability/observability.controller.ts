@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { MetricsService } from './metrics.service';
 
-@Controller('observability')
+@Controller('api/observability')
 export class ObservabilityController {
     constructor(private readonly metricsService: MetricsService) { }
 

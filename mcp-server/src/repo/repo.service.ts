@@ -3,9 +3,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 interface McpConfig {
-  rootDir: string;
+  rootDir?: string;
+  repo?: {
+    path?: string;
+    ignore?: string[];
+    maxFileSizeKb?: number;
+  };
   ignore?: string[];
-  maxFileSizeKb: number;
+  maxFileSizeKb?: number;
 }
 
 @Injectable()
@@ -37,7 +42,7 @@ export class RepoService implements OnModuleInit {
     this.repoContext = '';
     this.fileCache.clear();
 
-    const configPath = path.join(this.projectRoot, 'mcp.config.json');
+    const configPath = path.join(this.projectRoot, 'melcp.config.json');
     if (!fs.existsSync(configPath)) {
       this.logger.warn(`Config file not found at ${configPath}`);
       return;
@@ -47,27 +52,28 @@ export class RepoService implements OnModuleInit {
       const configRaw = fs.readFileSync(configPath, 'utf8');
       this.config = JSON.parse(configRaw) as McpConfig;
     } catch (error) {
-      this.logger.error('Failed to parse mcp.config.json', error);
+      this.logger.error('Failed to parse melcp.config.json', error);
       return;
     }
 
-    if (!this.config || !this.config.rootDir) {
-      this.logger.warn(`Invalid config: rootDir missing`);
+    const repoRootFromConfig = this.config?.repo?.path?.trim() || this.config?.rootDir?.trim();
+    if (!this.config || !repoRootFromConfig) {
+      this.logger.warn('Invalid config: repo.path (or legacy rootDir) missing');
       return;
     }
 
-    const rootDir = path.resolve(this.projectRoot, this.config.rootDir);
+    const rootDir = path.resolve(this.projectRoot, repoRootFromConfig);
     if (!fs.existsSync(rootDir)) {
       this.logger.warn(`Root dir not found: ${rootDir}`);
       return;
     }
 
     const defaultIgnore = ['node_modules', '.git', 'dist'];
-    const customIgnore = this.config.ignore || [];
+    const customIgnore = this.config.repo?.ignore || this.config.ignore || [];
     const ignorePatterns = [...defaultIgnore, ...customIgnore];
 
     const contextLines: string[] = [];
-    const maxFileSizeKb = this.config.maxFileSizeKb || 1024;
+    const maxFileSizeKb = this.config.repo?.maxFileSizeKb || this.config.maxFileSizeKb || 1024;
 
     this.walkDir(rootDir, rootDir, ignorePatterns, maxFileSizeKb, contextLines);
 
