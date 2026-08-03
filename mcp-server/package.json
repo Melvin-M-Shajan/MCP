@@ -1,10 +1,10 @@
 {
   "name": "mcp-server",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "NestJS multi-agent backend for melcp",
+  "author": "Melvin M Shajan",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "build": "nest build && tsc -p tsconfig.cli.json && node -e \"const fs=require('fs');const p='dist/src';if(fs.existsSync(p)){fs.cpSync(p,'dist',{recursive:true});}\"",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
