@@ -1,7 +1,7 @@
 {
   "name": "melcp",
-  "version": "0.1.6",
-  "description": "melcp - AI-powered project introspection tool for PostgreSQL and codebases",
+  "version": "0.1.9",
+  "description": "Local-first PostgreSQL introspection with safe natural-language-to-SQL and observable multi-agent execution",
   "bin": {
     "melcp": "mcp-server/bin/cli.js"
   },
@@ -28,17 +28,18 @@
     "developer-tools",
     "database-introspection",
     "ai-agents",
+    "natural-language-to-sql",
     "nestjs"
   ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Melvin-M-Shajan/MCP.git"
+    "url": "git+https://github.com/Melvin-M-Shajan/multi-agent-control-platform.git"
   },
   "bugs": {
-    "url": "https://github.com/Melvin-M-Shajan/MCP/issues"
+    "url": "https://github.com/Melvin-M-Shajan/multi-agent-control-platform/issues"
   },
-  "homepage": "https://github.com/Melvin-M-Shajan/MCP#readme",
+  "homepage": "https://github.com/Melvin-M-Shajan/multi-agent-control-platform#readme",
   "dependencies": {
     "@langchain/core": "^1.1.35",
     "@langchain/google-genai": "^2.1.26",
