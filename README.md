@@ -1,53 +1,85 @@
-# melcp
+# Multi-Agent Control Platform
 
-## What it is
-`melcp` is a sidecar developer tool for engineers who want a fast way to query and inspect their PostgreSQL-backed project without wiring custom internal dashboards. Run it locally against any codebase to chat with your database in natural language, inspect schema and repo context, and trace agent execution in one UI.
+Local-first developer tooling for turning natural-language questions into validated PostgreSQL queries while exposing the complete multi-agent execution trace.
 
-## Getting started
-1. Install and initialize config in your project directory:
-   ```bash
-   npx melcp init
-   ```
-2. Fill in `melcp.config.json` (database URL, repo path, and API key is auto-generated).
-3. Start the tool:
-   ```bash
-   npx melcp start
-   ```
-   Then open the local dashboard in your browser (for example `http://localhost:3001`).
+[![npm](https://img.shields.io/npm/v/melcp?color=6366f1)](https://www.npmjs.com/package/melcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 
-## Configuration
-Create `melcp.config.json` in your working directory:
+## Why it exists
 
-```jsonc
-{
-  "port": 3001, // Optional: local server port (default: 3001)
-  "host": "127.0.0.1", // Optional: bind host (default: 127.0.0.1)
-  "apiKey": "00000000-0000-0000-0000-000000000000", // Required: API auth key
-  "database": {
-    "url": "postgresql://readonly_user:readonly_password@localhost:5432/your_database" // Required
-  },
-  "repo": {
-    "path": "C:/path/to/your/project/root", // Required: absolute path to target repo
-    "ignore": ["node_modules", "dist", ".git"], // Optional: extra ignore patterns
-    "maxFileSizeKb": 50 // Optional: max indexed file size in KB
-  }
-}
+Most internal dashboards answer only the questions anticipated when they were built. `melcp` provides an inspectable alternative: a supervisor routes each request through schema selection, SQL generation, read-only validation, execution, and result formatting. Every stage is visible in the React observability console.
+
+```mermaid
+flowchart LR
+  Q["Natural-language question"] --> S["Supervisor agent"]
+  S --> C["Schema and repository context"]
+  C --> G["SQL agent"]
+  G --> V{"Read-only validator"}
+  V -->|SELECT / WITH| E["PostgreSQL execution"]
+  V -->|Mutation detected| B["Block request"]
+  E --> F["Formatter agent"]
+  F --> O["Answer + trace + metrics"]
 ```
 
-Required fields: `apiKey`, `database.url`, `repo.path`  
-Optional fields: `port`, `host`, `repo.ignore`, `repo.maxFileSizeKb`
+## Highlights
 
-## What you get
-- **Chat**: Ask questions in plain English and get SQL-backed answers from your PostgreSQL database.
-- **Project Explorer**: Inspect repo summary, indexed files, top directories, and structured schema metadata.
-- **Traces**: See per-agent reasoning flow, token usage, statuses, and execution sequence.
-- **Observability**: Monitor execution history, logs, and performance/health metrics in real time.
+- Supervisor-led multi-agent routing with LangChain and NestJS.
+- PostgreSQL schema introspection and repository-aware context.
+- A `QueryValidator` that rejects destructive or non-read-only SQL.
+- Provider abstraction for Gemini and Groq.
+- Observable reasoning, token usage, latency, logs, generated SQL, and execution history.
+- Browser-based recruiter demo with deterministic data and zero external writes.
 
-## Security
-- API routes are protected by a required API key (`x-api-key` header or `apiKey` query param).
-- The server binds to `127.0.0.1` by default to keep access local-only unless you explicitly change host.
-- SQL safety is enforced through `QueryValidator`, which blocks destructive statements and keeps DB interaction read-oriented.
+## Install the CLI
 
-## Requirements
-- Node.js 18+
-- PostgreSQL
+Requirements: Node.js 18+, a PostgreSQL database, and a dedicated read-only database user.
+
+```bash
+npx melcp init
+# Edit melcp.config.json with a read-only database URL, repository path, and AI provider key.
+npx melcp start
+```
+
+The service binds to `127.0.0.1` by default. Do not commit `melcp.config.json`; it contains local credentials.
+
+## Local development
+
+```bash
+npm ci
+npm --prefix mcp-server ci
+npm --prefix react-client ci
+npm run build
+```
+
+Run the backend and UI independently while developing:
+
+```bash
+npm --prefix mcp-server run start:dev
+npm --prefix react-client run dev
+```
+
+To run the public-safe interface without a backend:
+
+```bash
+cd react-client
+VITE_DEMO_MODE=true npm run dev
+```
+
+On PowerShell, set `$env:VITE_DEMO_MODE="true"` before starting Vite.
+
+## Repository layout
+
+- `mcp-server/` — NestJS agents, orchestration, validation, persistence, and observability.
+- `react-client/` — React/Vite control console and frontend-only recruiter demo.
+- `melcp.config.example.json` — sanitized CLI configuration contract.
+
+## Safety boundaries
+
+- Use a PostgreSQL role that has only the minimum read permissions.
+- The SQL validator is defense in depth, not a substitute for database authorization.
+- The hosted demo is simulated and never connects to a database, AI provider, or filesystem.
+- Keep API keys and database URLs in the local untracked configuration file.
+
+## License
+
+MIT © 2026 Melvin M Shajan.
