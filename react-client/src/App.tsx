@@ -62,12 +62,17 @@ export default function App() {
   }, [fetchSessions]);
 
   return (
-    <div className="dark flex flex-col h-screen w-full lg:flex-row overflow-hidden absolute inset-0 pt-14 text-white z-10 bg-[#06070f]">
-      {/* Stable background (no external media dependency) */}
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(99,102,241,0.26),transparent_32%),radial-gradient(circle_at_80%_15%,rgba(168,85,247,0.2),transparent_32%),radial-gradient(circle_at_60%_78%,rgba(56,189,248,0.16),transparent_36%),linear-gradient(180deg,#080a14_0%,#04050b_100%)]" />
-      <div className="absolute inset-0 -z-10 opacity-25 [background:linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:32px_32px]" />
-      <div className="absolute -top-20 -left-24 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl animate-pulse -z-10" />
-      <div className="absolute bottom-[-90px] right-[-60px] h-80 w-80 rounded-full bg-purple-500/20 blur-3xl animate-pulse -z-10" />
+    <div className="dark flex flex-col h-screen w-full lg:flex-row overflow-hidden absolute inset-0 pt-14 text-white z-10">
+      {/* Preserve the original animated liquid-glass backdrop. */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover -z-10"
+      >
+        <source src="/3.mp4" type="video/mp4" />
+      </video>
 
       {/* Navbar Placeholder (mimicking layout.tsx top bar) */}
       <header className="absolute top-0 left-0 right-0 h-14 border-b border-white/10 bg-black/40 backdrop-blur-xl z-50 flex items-center px-6">
