@@ -4,8 +4,8 @@ import './index.css'
 
 async function loadApplication(): Promise<ComponentType> {
   if (import.meta.env.VITE_DEMO_MODE === 'true') {
-    const { RecruiterDemo } = await import('./components/recruiter-demo')
-    return RecruiterDemo
+    const { ProductDemo } = await import('./components/product-demo')
+    return ProductDemo
   }
 
   const { default: App } = await import('./App')

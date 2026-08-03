@@ -5,7 +5,7 @@ Local-first developer tooling for turning natural-language questions into valida
 [![npm](https://img.shields.io/npm/v/melcp?color=6366f1)](https://www.npmjs.com/package/melcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 
-[Live recruiter demo](https://multi-agent-control-platform-demo.vercel.app/) · [npm package](https://www.npmjs.com/package/melcp)
+[Live demo](https://multi-agent-control-platform-demo.vercel.app/) · [npm package](https://www.npmjs.com/package/melcp)
 
 ## Why it exists
 
@@ -30,7 +30,7 @@ flowchart LR
 - A `QueryValidator` that rejects destructive or non-read-only SQL.
 - Provider abstraction for Gemini and Groq.
 - Observable reasoning, token usage, latency, logs, generated SQL, and execution history.
-- Browser-based recruiter demo with deterministic data and zero external writes.
+- Browser-based product demo with deterministic data and zero external writes.
 
 ## Install the CLI
 
@@ -72,7 +72,7 @@ On PowerShell, set `$env:VITE_DEMO_MODE="true"` before starting Vite.
 ## Repository layout
 
 - `mcp-server/` — NestJS agents, orchestration, validation, persistence, and observability.
-- `react-client/` — React/Vite control console and frontend-only recruiter demo.
+- `react-client/` — React/Vite control console and frontend-only product demo.
 - `melcp.config.example.json` — sanitized CLI configuration contract.
 
 ## Safety boundaries

@@ -4,8 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
-  publicDir: mode === 'demo' ? false : 'public',
+export default defineConfig(() => ({
   plugins: [
     react(),
     tailwindcss(),
