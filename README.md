@@ -5,6 +5,8 @@ Local-first developer tooling for turning natural-language questions into valida
 [![npm](https://img.shields.io/npm/v/melcp?color=6366f1)](https://www.npmjs.com/package/melcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 
+[Live recruiter demo](https://multi-agent-control-platform-demo.vercel.app/) · [npm package](https://www.npmjs.com/package/melcp)
+
 ## Why it exists
 
 Most internal dashboards answer only the questions anticipated when they were built. `melcp` provides an inspectable alternative: a supervisor routes each request through schema selection, SQL generation, read-only validation, execution, and result formatting. Every stage is visible in the React observability console.
